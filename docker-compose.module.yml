@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  api:
+    restart: always
+    build: ./
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./src:/app/src
+      - ./package.json:/app/package.json
+      - ./nodemon.json:/app/nodemon.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./globals.d.ts:/app/globals.d.ts
+      - ./jest.config.ts:/app/jest.config.ts
+      - ./babel.config.js:/app/babel.config.js
+      - ./dev.env:/app/dev.env
+      - ./test.env:/app/test.env
