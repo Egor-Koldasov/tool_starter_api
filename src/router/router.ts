@@ -4,10 +4,9 @@ import { NextFunction, Response, Request } from "express";
 import { Endpoint, Route, UnknownEndpoint } from "./Route";
 import { getReqUser } from "../tokenAuth";
 import get from "../lib/get";
-import { indexOf } from "ramda";
-import { identity } from "lodash";
-import { logRequest } from "../lib/log";
-import { ApiError } from "./routes/error";
+import { identity, indexOf } from "ramda";
+import { debug, logRequest } from "../lib/log";
+import { ApiError, getErrorMessage } from "./routes/error";
 
 
 export const getModules = (relPath: string) => {
@@ -26,8 +25,8 @@ const crudMethods = ['get', 'post', 'put', 'delete'] as const;
 
 const execEndpoint = async (endpoint: UnknownEndpoint, req: Request, res: Response) => {
   const passedParams = req.method === 'GET' ? req.query : req.body;
-  console.log({passedParams});
-  const params = endpoint.schema ? await endpoint.schema.validate(passedParams) : undefined;
+  debug({passedParams});
+  const params = endpoint.schema ? await endpoint.schema.parse(passedParams) : undefined;
   const user = await getReqUser(req);
   const result = await endpoint(params, user, req, res);
   res.send(result);
@@ -49,19 +48,18 @@ export const routerMiddleware = () => async (req: Request, res: Response, next: 
     if (!endpoint) throw notFound();
     await execEndpoint(endpoint, req, res);
   } catch (error) {
-    console.error(error);
     if (!(error instanceof Error)) {
       res.status(502);
-      res.end(String(error));
+      res.send({message: getErrorMessage(error)});
       return
     }
-    if (error.name === 'ValidationError') {
+    if (error.name === 'ZodError') {
       res.status(400);
-      res.end(String(error));
+      res.send({message: getErrorMessage(error)});
     }
     if (error instanceof ApiError) {
       res.status(error.status);
-      res.end(String(error));
+      res.send({message: getErrorMessage(error)});
     }
   }
 

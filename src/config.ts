@@ -12,13 +12,19 @@ const envToString = (env: string | undefined) => env ? env : ''
 const corsOriginsStr = envToString(process.env.CORS_ORIGINS) || 'https://studio.apollographql.com,http://localhost:3000,http://dev.local:3000';
 const corsOrigins = corsOriginsStr.split(',').map(o => o.trim()).filter(identity);
 
+const apiPort = parseInt(envToString(process.env.API_PORT)) || 4000;
+const hostname = process.env.API_HOSTNAME || 'localhost';
+const hostUrl = process.env.HOST_URL || (`http://${hostname}:${apiPort}`);
+
 const config = {
-  graphqlPort: parseInt(envToString(process.env.GRAPHQL_PORT)) || 4000,
+  apiPort,
+  hostUrl,
   corsOrigins,
   db: dbConfig,
+  logLvl: envToString(process.env.LOG_LVL) || 'DEBUG',
   // auth
-  signedCookies: process.env.SIGNED_COOKIES === 'FALSE' || true,
-  secureCookies: process.env.SECURE_COOKIES === 'FALSE' || true,
+  signedCookies: process.env.SIGNED_COOKIES === 'FALSE' ? false : true,
+  secureCookies: process.env.SECURE_COOKIES === 'FALSE' ? false : true,
   cookiesSecret: process.env.COOKIE_SECRET || '37e87192-1de4-4595-b317-cdf0ead367a7',
   authCookieName: process.env.AUTH_COOKIE_NAME || 'imhucauen',
   authSalt: process.env.AUTH_SALT || 'iuquoigiungcoiue',

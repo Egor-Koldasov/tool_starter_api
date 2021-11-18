@@ -6,11 +6,11 @@ import { db } from '../../database/db-connection';
 import { addAuthToken } from '../../tokenAuth';
 import { badRequest } from './error';
 import { pickUserPublicValues } from '../../lib/publicUser';
-import { object, string } from 'yup';
+import { object, string } from 'zod';
 
 const schema = object({
-  email: string().email().required(),
-  password: string().required(),
+  email: string().email(),
+  password: string(),
 })
 
 const post: Endpoint<MeRes, typeof schema> = async (params, userAuthorised, req, res) => {

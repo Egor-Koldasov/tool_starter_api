@@ -1,15 +1,15 @@
 import { Request, Response } from "express";
-import { Entries, RequireAtLeastOne } from "type-fest";
-import { Asserts, BaseSchema } from "yup";
+import { RequireAtLeastOne } from "type-fest";
+import { TypeOf, ZodTypeAny } from "zod";
 import User from "../database/User";
 
-type AssertsOptional<Schema extends (BaseSchema | undefined)> = Schema extends undefined ? undefined : Schema extends BaseSchema ? Asserts<Schema> : never
+type AssertsOptional<Schema extends (ZodTypeAny | undefined)> = Schema extends undefined ? undefined : Schema extends ZodTypeAny ? TypeOf<Schema> : never
 
-export type Endpoint<Result extends (StringKeyObject | void) = void, Schema extends (BaseSchema | undefined) = undefined> = {
+export type Endpoint<Result extends (StringKeyObject | void) = void, Schema extends (ZodTypeAny | undefined) = undefined> = {
   (params: AssertsOptional<Schema>, user: User | null, req: Request, res: Response): Promise<Result> | Result,
-} & (Schema extends BaseSchema ? {schema: Schema} : {schema?: Schema})
+} & (Schema extends ZodTypeAny ? {schema: Schema} : {schema?: Schema})
 
-export type UnknownEndpoint = Endpoint<(StringKeyObject | void), (BaseSchema | undefined)>
+export type UnknownEndpoint = Endpoint<(StringKeyObject | void), (ZodTypeAny | undefined)>
 
 export interface RouteAllOptional {
   get?: UnknownEndpoint,

@@ -1,7 +1,8 @@
-import { gql } from '@apollo/client/core';
 import { db } from '../../../database/db-connection';
+import { debug } from '../../../lib/log';
 import { cleanupIntegrationTests, setupIntegrationTests } from '../../util/setup-test-server';
-import { testApolloClient } from '../../util/testApolloClient';
+import { apiUrl, makeClient } from '../../util/testApi';
+import { makeTestFetch } from '../../util/testFetch';
 
 const testUsers = [
   {
@@ -11,12 +12,17 @@ const testUsers = [
   {
     "email": "test2@test.com",
     "password": "test2pass"
+  },
+  {
+    "email": "test3invalidtest.com",
+    "password": "test3pass"
   }
 ]
 const clearTestUsers = async () => {
-  return db('app_user').modify((query) => testUsers.map(({email}) => query.orWhere({email}))).del()
+  return db('app_user').modify((query) => testUsers.map(({ email }) => query.orWhere({ email }))).del()
 }
 describe('Auth basics', () => {
+  const client = makeClient()
   beforeAll(async () => {
     await setupIntegrationTests()
     await clearTestUsers();
@@ -26,178 +32,66 @@ describe('Auth basics', () => {
     await cleanupIntegrationTests()
   })
   test('sign up success', async () => {
-    await testApolloClient(async (client) => {
-      const result = await client
-        .mutate(
-          {
-            mutation: gql`
-              mutation Mutation($email: String, $password: String) {
-                signup(email: $email, password: $password) {
-                  success
-                  me {
-                    email
-                  }
-                }
-              }
-            `,
-            variables: testUsers[0]
-          }
-        )
-      expect(result).toHaveProperty('data.signup.success', true)
-      expect(result).toHaveProperty('data.signup.me.email', testUsers[0].email)
-    })
+    const response = await client.post(apiUrl('/signup'), testUsers[0]);
+    expect(response).toHaveProperty('status', 200)
+    expect(response).toHaveProperty('data.user.email', testUsers[0].email)
+    expect(response).toHaveProperty('data.user.id')
   })
 
   test('sign up error, existing email', async () => {
-    await testApolloClient(async (client) => {
-      const result = await client
-        .mutate(
-          {
-            mutation: gql`
-              mutation Mutation($email: String, $password: String) {
-                signup(email: $email, password: $password) {
-                  success
-                  message
-                  me {
-                    email
-                  }
-                }
-              }
-            `,
-            variables: testUsers[0]
-          }
-        )
-      expect(result).toHaveProperty('data.signup.success', false)
-      expect(result).toHaveProperty('data.signup.message', 'This email is already in use')
-      expect(result).toHaveProperty('data.signup.me', null)
-    })
+    const promise = client.post(apiUrl('/signup'), testUsers[0]);
+    await expect(promise).rejects.toHaveProperty('response.status', 400)
+    await expect(promise).rejects.toHaveProperty('response.data.message', 'This email is already in use')
   })
 
   test('me success', async () => {
-    await testApolloClient(async (client) => {
-
-      const result = await client
-        .query({
-          query: gql`
-            query Query {
-              me {
-                email              }
-            }
-          `
-        })
-      expect(result).toHaveProperty('data.me.email', testUsers[0].email)
-    });
+    const response = await client.get(apiUrl('/me'));
+    expect(response).toHaveProperty('data.user.email', testUsers[0].email)
   })
 
   test('logout', async () => {
-    await testApolloClient(async (client) => {
-      const logoutResult = await client
-        .mutate(
-          {
-            mutation: gql`
-              mutation Mutation {
-                logout {success}
-              }
-            `,
-          }
-        )
-      expect(logoutResult).toHaveProperty('data.logout.success', true)
-
-      const meResult = await client
-        .query({
-          query: gql`
-            query Query {
-              me {
-                email
-              }
-            }
-          `
-        })
-      expect(meResult).toHaveProperty('data.me', null)
-    })
+    const logoutResponse = await client.post(apiUrl('/logout'));
+    expect(logoutResponse).toHaveProperty('status', 200)
+    const meResponse = await client.get(apiUrl('/me'));
+    expect(meResponse).toHaveProperty('data.user', null)
   })
 
   test('login error, email not found', async () => {
-    await testApolloClient(async (client) => {
-      const logoutResult = await client
-        .mutate(
-          {
-            mutation: gql`
-              mutation Mutation($email: String, $password: String) {
-                login(email: $email, password: $password) {
-                  success
-                  message
-                  me {
-                    email
-                  }
-                }
-              }
-            `,
-            variables: testUsers[1]
-          }
-        )
-      expect(logoutResult).toHaveProperty('data.login.success', false)
-      expect(logoutResult).toHaveProperty('data.login.message', 'Email not found')
-      expect(logoutResult).toHaveProperty('data.login.me', null)
-    })
+    const response = client.post(apiUrl('/login'), testUsers[1]);
+    await expect(response).rejects.toHaveProperty('response.status', 400)
+    await expect(response).rejects.toHaveProperty('response.data.message', 'Email not found')
+    await expect(response).rejects.not.toHaveProperty('response.data.user')
+  })
+
+  test('login error, invalid email', async () => {
+    const response = client.post(apiUrl('/login'), testUsers[2]);
+    await expect(response).rejects.toHaveProperty('response.status', 400)
+    await expect(response).rejects.toHaveProperty('response.data.message', 'email: Invalid email')
+    await expect(response).rejects.not.toHaveProperty('response.data.user')
+  })
+
+  test('login error, no password', async () => {
+    const response = client.post(apiUrl('/login'), {email: testUsers[0].email});
+    await expect(response).rejects.toHaveProperty('response.status', 400)
+    await expect(response).rejects.toHaveProperty('response.data.message', 'password: Required')
+    await expect(response).rejects.not.toHaveProperty('response.data.user')
   })
 
   test('login error, wrong pass', async () => {
-    await testApolloClient(async (client) => {
-      const logoutResult = await client
-        .mutate(
-          {
-            mutation: gql`
-              mutation Mutation($email: String, $password: String) {
-                login(email: $email, password: $password) {
-                  success
-                  message
-                  me {
-                    email
-                  }
-                }
-              }
-            `,
-            variables: {...testUsers[0], password: 'wrongpass'}
-          }
-        )
-      expect(logoutResult).toHaveProperty('data.login.success', false)
-      expect(logoutResult).toHaveProperty('data.login.message', 'Email or password is incorrect')
-      expect(logoutResult).toHaveProperty('data.login.me', null)
-    })
+    const response = client.post(apiUrl('/login'), {...testUsers[0], password: 'wrongpass'});
+    await expect(response).rejects.toHaveProperty('response.status', 400)
+    await expect(response).rejects.toHaveProperty('response.data.message', 'Email or password is incorrect')
+    await expect(response).rejects.not.toHaveProperty('response.data.user')
   })
 
   test('login', async () => {
-    await testApolloClient(async (client) => {
-      const logoutResult = await client
-        .mutate(
-          {
-            mutation: gql`
-              mutation Mutation($email: String, $password: String) {
-                login(email: $email, password: $password) {
-                  success
-                  me {
-                    email
-                  }
-                }
-              }
-            `,
-            variables: testUsers[0]
-          }
-        )
-      expect(logoutResult).toHaveProperty('data.login.success', true)
+    const loginResponse = await client.post(apiUrl('/login'), testUsers[0]);
+    expect(loginResponse).toHaveProperty('status', 200)
+    expect(loginResponse).toHaveProperty('data.user.email', testUsers[0].email)
+    expect(loginResponse).toHaveProperty('data.user.id')
 
-      const meResult = await client
-        .query({
-          query: gql`
-            query Query {
-              me {
-                email
-              }
-            }
-          `
-        })
-        expect(meResult).toHaveProperty('data.me.email', testUsers[0].email)
-    })
+    const meResponse = await client.get(apiUrl('/me'));
+    expect(meResponse).toHaveProperty('data.user.email', testUsers[0].email)
+    expect(meResponse).toHaveProperty('data.user.id')
   })
 })

@@ -19,12 +19,7 @@ export const getReqUser = async (req: Request) => {
   const authCookie = getAuthCookie(req);
   return authCookie ? await getUserFromToken(authCookie) : null;
 }
-export const authMiddleware = () => async (req: Request, res: Response, next: NextFunction) => {
-  const authCookie = getAuthCookie(req);
-  const appReq = req as AppRequest;
-  appReq.getUser = async () => authCookie ? await getUserFromToken(authCookie) : null;
-  next();
-}
+
 export const addAuthToken = async (user: User, res: Response) => {
   const token = uuidv4();
   await db('auth').insert({token, user_id: user.id});

@@ -6,14 +6,15 @@ import config from './config';
 import { routerMiddleware } from './router/router';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import { info, logError } from './lib/log';
 
 interface ListenParams {port: number};
 
 export const startServer = async () => {
   process.on('unhandledRejection', (error) => {
-    console.error('unhandledRejection', error);
+    logError('unhandledRejection', error);
   });
-  const port = config.graphqlPort;
+  const port = config.apiPort;
   const app = express();
   app.use(cors({origin: config.corsOrigins, credentials: true}))
   app.use(cookieParser(config.cookiesSecret));
@@ -24,8 +25,8 @@ export const startServer = async () => {
     const server: Server = app.listen(params, () => resolve(server));
   });
   const server = await listen({port});
-  console.log(`Graphql server started: localhost:${port} (db: ${process.env.DB_NAME})`);
-  server.on('close', () => console.log('API server closing'));
-  server.on('error', (error: any) => console.log('API server error', error));
+  info(`Graphql server started: localhost:${port} (db: ${process.env.DB_NAME})`);
+  server.on('close', () => info('API server closing'));
+  server.on('error', (error: any) => logError('API server error', error));
   return server;
 }
