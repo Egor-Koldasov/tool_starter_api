@@ -29,7 +29,8 @@ const execEndpoint = async (endpoint: UnknownEndpoint, req: Request, res: Respon
   const params = endpoint.schema ? await endpoint.schema.parse(passedParams) : undefined;
   const user = await getReqUser(req);
   const result = await endpoint(params, user, req, res);
-  res.send(result);
+  const sendingData: object | null = result || null;
+  res.json(sendingData);
 }
 
 const isCrudMethod = (method: string): method is CrudMethod => indexOf(method, crudMethods) >= 0;
@@ -50,16 +51,16 @@ export const routerMiddleware = () => async (req: Request, res: Response, next: 
   } catch (error) {
     if (!(error instanceof Error)) {
       res.status(502);
-      res.send({message: getErrorMessage(error)});
+      res.json({message: getErrorMessage(error)});
       return
     }
     if (error.name === 'ZodError') {
       res.status(400);
-      res.send({message: getErrorMessage(error)});
+      res.json({message: getErrorMessage(error)});
     }
     if (error instanceof ApiError) {
       res.status(error.status);
-      res.send({message: getErrorMessage(error)});
+      res.json({message: getErrorMessage(error)});
     }
   }
 
