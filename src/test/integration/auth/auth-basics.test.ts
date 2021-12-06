@@ -1,8 +1,6 @@
 import { db } from '../../../database/db-connection';
-import { debug } from '../../../lib/log';
 import { cleanupIntegrationTests, setupIntegrationTests } from '../../util/setup-test-server';
 import { apiUrl, makeClient } from '../../util/testApi';
-import { makeTestFetch } from '../../util/testFetch';
 
 const testUsers = [
   {
