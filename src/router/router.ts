@@ -6,13 +6,13 @@ import { getReqUser } from "../tokenAuth";
 import get from "../lib/get";
 import { identity, indexOf } from "ramda";
 import { debug, logRequest } from "../lib/log";
-import { ApiError, getErrorMessage } from "./routes/error";
+import { ApiError, getErrorMessage } from "./error";
 
 
 export const getModules = (relPath: string) => {
   const queries = requireAll({
     dirname: path.resolve(__dirname, relPath),
-    filter: /(.+)\.ts/,
+    filter: /(.+)\.(ts|js)$/,
     resolve: (module) => module.default,
   });
   return queries;

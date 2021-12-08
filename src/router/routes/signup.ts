@@ -3,7 +3,7 @@ import util from 'util';
 import { Endpoint, Route } from '../Route';
 import { object, string } from 'zod';
 import { MeRes } from './me';
-import { badRequest } from './error';
+import { badRequest } from '../error';
 import { pickUserPublicValues } from '../../lib/publicUser';
 import User from '../../database/User';
 import { db } from '../../database/db-connection';

@@ -4,7 +4,7 @@ import { MeRes } from './me';
 import User from '../../database/User';
 import { db } from '../../database/db-connection';
 import { addAuthToken } from '../../tokenAuth';
-import { badRequest } from './error';
+import { badRequest } from '../error';
 import { pickUserPublicValues } from '../../lib/publicUser';
 import { object, string } from 'zod';
 

@@ -4,7 +4,7 @@
   "description": "GrapgQL server",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -r ./dist && tsc --build",
     "start": "node ./dist/src/start.js",
     "build_start": "npm run build && npm run start",
     "dev": "nodemon --inspect --signal SIGINT src/start.ts",

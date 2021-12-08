@@ -1,7 +1,5 @@
 import { mapObjIndexed } from "ramda";
-import { ValueOf } from "type-fest";
 import { ZodError } from "zod";
-import { debug } from "../../lib/log";
 
 export class ApiError extends Error {
   status: number
