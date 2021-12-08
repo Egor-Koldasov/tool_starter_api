@@ -1,13 +1,15 @@
 import { identity } from "ramda";
 
+const envToString = (env: string | undefined) => env ? env : ''
+
 const dbConfig = {
   host: process.env.DB_HOST,
+  port: parseInt(envToString(process.env.DB_PORT)),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  // ssl: { rejectUnauthorized: false },
 };
-
-const envToString = (env: string | undefined) => env ? env : ''
 
 const corsOriginsStr = envToString(process.env.CORS_ORIGINS) || 'https://studio.apollographql.com,http://localhost:3000,http://dev.local:3000';
 const corsOrigins = corsOriginsStr.split(',').map(o => o.trim()).filter(identity);

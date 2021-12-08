@@ -25,7 +25,7 @@ export const startServer = async () => {
     const server: Server = app.listen(params, () => resolve(server));
   });
   const server = await listen({port});
-  info(`Graphql server started: localhost:${port} (db: ${process.env.DB_NAME})`);
+  info(`API server started: localhost:${port} (db: ${process.env.DB_NAME})`);
   server.on('close', () => info('API server closing'));
   server.on('error', (error: any) => logError('API server error', error));
   return server;

@@ -49,6 +49,7 @@ export const routerMiddleware = () => async (req: Request, res: Response, next: 
     if (!endpoint) throw notFound();
     await execEndpoint(endpoint, req, res);
   } catch (error) {
+    debug(error);
     if (!(error instanceof Error)) {
       res.status(502);
       res.json({message: getErrorMessage(error)});
@@ -62,6 +63,7 @@ export const routerMiddleware = () => async (req: Request, res: Response, next: 
       res.status(error.status);
       res.json({message: getErrorMessage(error)});
     }
+    res.json({message: String(error)});
   }
 
   next();
