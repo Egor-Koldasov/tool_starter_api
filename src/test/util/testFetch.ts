@@ -7,7 +7,7 @@ export const makeTestFetch = () => {
   let cookies = {};
   const customFetch = async (input: RequestInfo, init?: RequestInit | undefined): Promise<Response> => {
     const fetchRes = await crossFetch(
-      `${config.hostUrl}/${input}`,
+      `${config.testHostUrl}/${input}`,
       {
         ...init,
         headers: {

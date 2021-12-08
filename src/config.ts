@@ -1,35 +1,34 @@
 import { identity } from "ramda";
-
-const envToString = (env: string | undefined) => env ? env : ''
+import { booleanVar, numberVar, stringVar } from "./env/envVar";
 
 const dbConfig = {
-  host: process.env.DB_HOST,
-  port: parseInt(envToString(process.env.DB_PORT)) || 5432,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: stringVar('DB_HOST'),
+  port: numberVar('DB_PORT', 5432),
+  user: stringVar('DB_USER'),
+  password: stringVar('DB_PASSWORD'),
+  database: stringVar('DB_NAME'),
   // ssl: { rejectUnauthorized: false },
 };
 
-const corsOriginsStr = envToString(process.env.CORS_ORIGINS) || 'https://studio.apollographql.com,http://localhost:3000,http://dev.local:3000';
+const corsOriginsStr = stringVar('CORS_ORIGINS');
 const corsOrigins = corsOriginsStr.split(',').map(o => o.trim()).filter(identity);
 
-const apiPort = parseInt(envToString(process.env.API_PORT || process.env.PORT)) || 4000;
-const hostname = process.env.API_HOSTNAME || 'localhost';
-const hostUrl = process.env.HOST_URL || (`http://${hostname}:${apiPort}`);
+const apiPort = numberVar('PORT');
+const testHostname = stringVar('TEST_API_HOSTNAME', 'localhost');
+const testHostUrl = stringVar('TEST_HOST_URL', `http://${testHostname}:${apiPort}`);
 
 const config = {
   apiPort,
-  hostUrl,
+  testHostUrl,
   corsOrigins,
   db: dbConfig,
-  logLvl: envToString(process.env.LOG_LVL) || 'DEBUG',
+  logLvl: stringVar('LOG_LVL', 'DEBUG'),
   // auth
-  signedCookies: process.env.SIGNED_COOKIES === 'FALSE' ? false : true,
-  secureCookies: process.env.SECURE_COOKIES === 'FALSE' ? false : true,
-  cookiesSecret: process.env.COOKIE_SECRET || '37e87192-1de4-4595-b317-cdf0ead367a7',
-  authCookieName: process.env.AUTH_COOKIE_NAME || 'imhucauen',
-  authSalt: process.env.AUTH_SALT || 'iuquoigiungcoiue',
-  uuidNamespace: process.env.UUID_NAMESPACE || '4caeabca-8f4d-4488-8388-ae7fe46bd59e',
+  signedCookies: booleanVar('SIGNED_COOKIES', true),
+  secureCookies: booleanVar('SECURE_COOKIES', true),
+  cookiesSecret: stringVar('COOKIE_SECRET'),
+  authCookieName: stringVar('AUTH_COOKIE_NAME'),
+  authSalt: stringVar('AUTH_SALT'),
+  uuidNamespace: stringVar('UUID_NAMESPACE'),
 };
 export default config;

@@ -1,4 +1,4 @@
-import './database/env/load-dev';
+import './env/importDevEnv';
 import type {Server} from 'http';
 import express from 'express';
 import cookieParser from 'cookie-parser';

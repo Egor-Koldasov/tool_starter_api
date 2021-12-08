@@ -9,4 +9,4 @@ export const makeClient = () => {
   return client;
 }
 
-export const apiUrl = (path: string) => `${config.hostUrl}/${path}`
+export const apiUrl = (path: string) => `${config.testHostUrl}/${path}`
