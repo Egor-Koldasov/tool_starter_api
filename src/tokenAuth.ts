@@ -1,7 +1,6 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import config from "./config";
 import { db } from "./database/db-connection";
-import { AppRequest } from "./types/AppRequest";
 import User from "./database/User";
 import { v4 as uuidv4 } from 'uuid';
 
