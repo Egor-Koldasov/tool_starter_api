@@ -13,7 +13,8 @@
     "dev__": "ts-node-dev ./src/start.ts",
     "test": "docker-compose --env-file ./test.env run --rm api npm run test_in",
     "test_in": "node --trace-warnings --async-stack-traces node_modules/.bin/jest",
-    "rebuild": "docker-compose stop api && docker-compose up -d --build api"
+    "rebuild": "docker-compose stop api && docker-compose up -d --build api",
+    "prepare": "husky install"
   },
   "author": "Egor Koldasov",
   "license": "ISC",
@@ -55,6 +56,7 @@
     "babel-jest": "^27.0.2",
     "cookie": "^0.4.1",
     "cross-fetch": "^3.1.4",
+    "husky": "^7.0.4",
     "jest": "^27.0.4",
     "tough-cookie": "^4.0.0",
     "ts-node": "^9.1.1",

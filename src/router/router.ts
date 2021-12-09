@@ -55,10 +55,12 @@ export const routerMiddleware = () => async (req: Request, res: Response, next: 
     if (error instanceof ZodError) {
       res.status(400);
       res.json({message: getErrorMessage(error)});
+      return;
     }
     if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
       res.status(error.status);
       res.json({message: getErrorMessage(error)});
+      return;
     }
     // log any unexpected or server errors
     logError(error,  getErrorMessage(error));
