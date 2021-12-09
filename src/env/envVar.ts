@@ -39,5 +39,5 @@ export const booleanVar = (name: string, defaultVal?: boolean): boolean => {
     return stringVar === 'TRUE';
   }
   const env = process.env[name];
-  return defaultVal === true ? env === 'FALSE' : defaultVal === false;
+  return defaultVal === true ? env !== 'FALSE' : defaultVal === false;
 }

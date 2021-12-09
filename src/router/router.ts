@@ -5,8 +5,9 @@ import { Endpoint, Route, UnknownEndpoint } from "./Route";
 import { getReqUser } from "../tokenAuth";
 import get from "../lib/get";
 import { identity, indexOf } from "ramda";
-import { debug, logRequest } from "../lib/log";
+import { debug, logError, logRequest } from "../lib/log";
 import { ApiError, getErrorMessage } from "./error";
+import { ZodError } from "zod";
 
 
 export const getModules = (relPath: string) => {
@@ -50,20 +51,20 @@ export const routerMiddleware = () => async (req: Request, res: Response, next: 
     await execEndpoint(endpoint, req, res);
   } catch (error) {
     debug(error);
-    if (!(error instanceof Error)) {
-      res.status(502);
-      res.json({message: getErrorMessage(error)});
-      return
-    }
-    if (error.name === 'ZodError') {
+    // pass messages for client-oriented errors
+    if (error instanceof ZodError) {
       res.status(400);
       res.json({message: getErrorMessage(error)});
     }
-    if (error instanceof ApiError) {
+    if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
       res.status(error.status);
       res.json({message: getErrorMessage(error)});
     }
-    res.json({message: String(error)});
+    // log any unexpected or server errors
+    logError(error,  getErrorMessage(error));
+    const status = error instanceof ApiError ? error.status : 502;
+    res.status(status);
+    res.json({message: 'Server error'});
   }
 
   next();
