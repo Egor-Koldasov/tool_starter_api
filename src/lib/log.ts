@@ -1,6 +1,7 @@
 import { Request } from "express";
 import config from "../config";
 import colors from 'colors/safe';
+import dayjs from "dayjs";
 
 export enum LogLvl {
   SILENT = 1,
@@ -18,7 +19,14 @@ export const log = (args: any[], lvl: LogLvl) => {
   const logLvlName = config.logLvl as (keyof typeof LogLvl)
   const enabledLvl = LogLvl[logLvlName] || LogLvl.INFO;
   if (lvl > enabledLvl) return;
-  console.log(...args);
+  const date = dayjs().format('YYYY-MM-DD/HH:mm:ss');
+  const hostname = process.env.HOSTNAME || '';
+  console.log(
+    colors.bgWhite(colors.black(date)),
+    hostname,
+    '\n',
+    ...args
+  );
 }
 export const debug = (...args: any[]) => log([colors.green('debug'), ...args], LogLvl.DEBUG);
 export const info = (...args: any[]) => log([colors.blue('info'), ...args], LogLvl.INFO);
