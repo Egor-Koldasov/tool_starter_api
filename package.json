@@ -1,5 +1,5 @@
 {
-  "name": "graphql_server",
+  "name": "tool_starter_api",
   "version": "1.0.0",
   "description": "GrapgQL server",
   "main": "index.js",
@@ -13,6 +13,7 @@
     "dev__": "ts-node-dev ./src/start.ts",
     "test": "docker-compose --env-file ./test.env run --rm api npm run test_in",
     "test_in": "node --trace-warnings --async-stack-traces node_modules/.bin/jest",
+    "typecheck": "tsc --build",
     "rebuild": "docker-compose stop api && docker-compose up -d --build api",
     "prepare": "husky install"
   },
